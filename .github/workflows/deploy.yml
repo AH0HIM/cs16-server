@@ -1,0 +1,47 @@
+name: Deploy to CS Server
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'working-files/**'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Create backup directory
+        run: mkdir -p backup
+
+      - name: Backup current files
+        uses: wangyucode/sftp-upload-action@v1.4.8
+        with:
+          host: ${{ secrets.SFTP_HOST }}
+          username: ${{ secrets.SFTP_USERNAME }}
+          password: ${{ secrets.SFTP_PASSWORD }}
+          localDir: "./backup"
+          remoteDir: "/cstrike/addons/amxmodx"
+          options: "-b backup_$(date +%Y%m%d_%H%M%S)"
+
+      - name: Deploy plugins
+        if: hashFiles('working-files/plugins/compiled/*.amxx') != ''
+        uses: wangyucode/sftp-upload-action@v1.4.8
+        with:
+          host: ${{ secrets.SFTP_HOST }}
+          username: ${{ secrets.SFTP_USERNAME }}
+          password: ${{ secrets.SFTP_PASSWORD }}
+          localDir: "./working-files/plugins/compiled"
+          remoteDir: "/cstrike/addons/amxmodx/plugins"
+
+      - name: Deploy configs
+        if: hashFiles('working-files/configs/*') != ''
+        uses: wangyucode/sftp-upload-action@v1.4.8
+        with:
+          host: ${{ secrets.SFTP_HOST }}
+          username: ${{ secrets.SFTP_USERNAME }}
+          password: ${{ secrets.SFTP_PASSWORD }}
+          localDir: "./working-files/configs"
+          remoteDir: "/cstrike/addons/amxmodx/configs"
