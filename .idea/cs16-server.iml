@@ -3,13 +3,9 @@
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/scripts/backup" />
-      <excludeFolder url="file://$MODULE_DIR$/server-files/addons" />
       <excludeFolder url="file://$MODULE_DIR$/server-files/cstrike" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.10" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
-  </component>
-  <component name="SonarLintModuleSettings">
-    <option name="uniqueId" value="68eeb6c3-6531-4943-b355-927d976934df" />
   </component>
 </module>
