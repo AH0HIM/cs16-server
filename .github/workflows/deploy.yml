@@ -16,16 +16,18 @@ jobs:
     - name: Create addons directory
       run: mkdir -p ./server-files/addons
 
-    - name: Download files from server
-      uses: wangyucode/sftp-upload-action@v2.0.2
-      with:
-        host: ${{ secrets.SFTP_HOST }}
-        port: 2022
-        username: ${{ secrets.SFTP_USERNAME }}
-        password: ${{ secrets.SFTP_PASSWORD }}
-        localDir: './server-files/addons'
-        remoteDir: '/home/container/cstrike/addons'
-        download: true
+    - name: Download files from server using sftp
+      env:
+        SFTP_HOST: ${{ secrets.SFTP_HOST }}
+        SFTP_USERNAME: ${{ secrets.SFTP_USERNAME }}
+        SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
+      run: |
+        sftp $SFTP_USERNAME@$SFTP_HOST <<EOF
+        cd /home/container/cstrike/addons
+        lcd ./server-files/addons
+        mget *
+        bye
+        EOF
 
     - name: Commit changes
       if: steps.git-status.outputs.clean == 'false'
