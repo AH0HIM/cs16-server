@@ -8,16 +8,16 @@ Configuration and management system for Counter-Strike 1.6 server.
 cs16-server/
 ├── server-files/              # Live server files and configs
 │   └── addons/
-│       ├── amxmodx/          # AMX Mod X files
-│       │   ├── configs/      # Plugin configurations
-│       │   └── plugins/      # Installed plugins
-│       └── metamod/          # MetaMod files
+│       ├── amxmodx/           # AMX Mod X files
+│       │   ├── configs/       # Plugin configurations
+│       │   └── plugins/       # Installed plugins
+│       └── metamod/           # MetaMod files
 │
-└── working-files/            # Development files
-    ├── configs/              # Configuration files for development
+└── working-files/             # Development files
+    ├── configs/               # Configuration files for development
     └── plugins/
-        ├── compiled/         # Compiled .amxx files
-        └── source/          # Source .sma files
+        ├── compiled/          # Compiled .amxx files
+        └── source/            # Source .sma files
 ```
 
 ## Usage
