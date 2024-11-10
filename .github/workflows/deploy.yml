@@ -6,7 +6,7 @@ on:
     paths:
       - 'working-files/**'
       - 'server-files/**'
-  workflow_dispatch:  # Для ручного запуску синхронізації, коли потрібно
+  workflow_dispatch:
 
 jobs:
   sync-and-deploy:
@@ -14,11 +14,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      # Створення бекапу перед будь-якими змінами
-      - name: Create backup
+      # Створення директорій якщо їх немає
+      - name: Ensure directories exist
         run: |
-          timestamp=$(date +%Y%m%d_%H%M%S)
-          mkdir -p backups/$timestamp
+          mkdir -p server-files/addons/amxmodx
+          mkdir -p server-files/addons/metamod
 
       # Синхронізація з сервера
       - name: Download from server
@@ -28,77 +28,24 @@ jobs:
           port: 2022
           username: ${{ secrets.SFTP_USERNAME }}
           password: ${{ secrets.SFTP_PASSWORD }}
-          localDir: './server-files'
+          localDir: 'server-files'
           remoteDir: '/cstrike/addons'
           download: true
+          forceUpload: false
 
-      # Перевірка змін в server-files
-      - name: Check server files changes
-        id: check-server
+      # Перевірка змін
+      - name: Check for changes
+        id: check
         run: |
-          git diff --quiet server-files/ || echo "server_changed=true" >> $GITHUB_OUTPUT
+          git status
+          git diff --quiet server-files/ || echo "has_changes=true" >> $GITHUB_OUTPUT
 
-      # Перевірка змін в working-files
-      - name: Check working files changes
-        id: check-working
-        run: |
-          echo "has_configs=$(test -d working-files/configs && echo true || echo false)" >> $GITHUB_OUTPUT
-          echo "has_plugins=$(test -d working-files/plugins/compiled && echo true || echo false)" >> $GITHUB_OUTPUT
-
-      # Деплой змінених файлів з server-files
-      - name: Deploy server files changes
-        if: steps.check-server.outputs.server_changed == 'true'
-        uses: wangyucode/sftp-upload-action@v2.0.2
-        with:
-          host: ${{ secrets.SFTP_HOST }}
-          port: 2022
-          username: ${{ secrets.SFTP_USERNAME }}
-          password: ${{ secrets.SFTP_PASSWORD }}
-          localDir: './server-files'
-          remoteDir: '/cstrike/addons'
-          forceUpload: true
-
-      # Деплой конфігів з working-files
-      - name: Deploy configs
-        if: steps.check-working.outputs.has_configs == 'true'
-        uses: wangyucode/sftp-upload-action@v2.0.2
-        with:
-          host: ${{ secrets.SFTP_HOST }}
-          port: 2022
-          username: ${{ secrets.SFTP_USERNAME }}
-          password: ${{ secrets.SFTP_PASSWORD }}
-          localDir: './working-files/configs'
-          remoteDir: '/cstrike/addons/amxmodx/configs'
-          forceUpload: true
-
-      # Деплой плагінів з working-files
-      - name: Deploy plugins
-        if: steps.check-working.outputs.has_plugins == 'true'
-        uses: wangyucode/sftp-upload-action@v2.0.2
-        with:
-          host: ${{ secrets.SFTP_HOST }}
-          port: 2022
-          username: ${{ secrets.SFTP_USERNAME }}
-          password: ${{ secrets.SFTP_PASSWORD }}
-          localDir: './working-files/plugins/compiled'
-          remoteDir: '/cstrike/addons/amxmodx/plugins'
-          forceUpload: true
-
-      # Оновлення репозиторію
+      # Коміт змін якщо вони є
       - name: Commit changes
+        if: steps.check.outputs.has_changes == 'true'
         run: |
           git config --global user.name 'GitHub Action'
           git config --global user.email 'action@github.com'
           git add server-files/
-          git diff --staged --quiet || git commit -m "Update server files after sync/deploy"
-          git push || echo "No changes to push"
-
-      # Статус виконання
-      - name: Deployment Status
-        if: always()
-        run: |
-          if [ "${{ job.status }}" = "success" ]; then
-            echo "✅ Sync and deployment completed successfully!"
-          else
-            echo "❌ Process failed!"
-          fi
+          git commit -m "Update server files from sync"
+          git push
