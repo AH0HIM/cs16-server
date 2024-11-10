@@ -13,27 +13,47 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Create backup directory
-        run: mkdir -p backup
+      - name: Check files
+        id: check
+        run: |
+          echo "has_configs=$(test -d working-files/configs && echo true || echo false)" >> $GITHUB_OUTPUT
+          echo "has_plugins=$(test -d working-files/plugins/compiled && echo true || echo false)" >> $GITHUB_OUTPUT
+
+      - name: Create backup
+        if: steps.check.outputs.has_configs == 'true' || steps.check.outputs.has_plugins == 'true'
+        run: |
+          timestamp=$(date +%Y%m%d_%H%M%S)
+          mkdir -p backup/$timestamp
 
       - name: Deploy configs
-        if: hashFiles('working-files/configs/*') != ''
+        if: steps.check.outputs.has_configs == 'true'
         uses: wangyucode/sftp-upload-action@v2.0.2
         with:
-          host: wing7.panel.godlike.host
+          host: ${{ secrets.SFTP_HOST }}
           port: 2022
           username: ${{ secrets.SFTP_USERNAME }}
           password: ${{ secrets.SFTP_PASSWORD }}
           localDir: './working-files/configs'
           remoteDir: '/cstrike/addons/amxmodx/configs'
+          forceUpload: true
 
       - name: Deploy plugins
-        if: hashFiles('working-files/plugins/compiled/*.amxx') != ''
+        if: steps.check.outputs.has_plugins == 'true'
         uses: wangyucode/sftp-upload-action@v2.0.2
         with:
-          host: wing7.panel.godlike.host
+          host: ${{ secrets.SFTP_HOST }}
           port: 2022
           username: ${{ secrets.SFTP_USERNAME }}
           password: ${{ secrets.SFTP_PASSWORD }}
           localDir: './working-files/plugins/compiled'
           remoteDir: '/cstrike/addons/amxmodx/plugins'
+          forceUpload: true
+
+      - name: Deployment Status
+        if: always()
+        run: |
+          if [ "${{ job.status }}" = "success" ]; then
+            echo "✅ Deployment completed successfully!"
+          else
+            echo "❌ Deployment failed!"
+          fi
