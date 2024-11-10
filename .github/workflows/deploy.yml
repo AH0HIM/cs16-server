@@ -8,11 +8,13 @@ on:
   workflow_dispatch:
 
 jobs:
-
   sync-from-server:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+
+    - name: Create addons directory
+      run: mkdir -p ./server-files/addons
 
     - name: Download files from server
       uses: wangyucode/sftp-upload-action@v2.0.2
@@ -21,8 +23,8 @@ jobs:
         port: 2022
         username: ${{ secrets.SFTP_USERNAME }}
         password: ${{ secrets.SFTP_PASSWORD }}
-        localDir: './server-files'
-        remoteDir: '/cstrike/addons'
+        localDir: './server-files/addons'
+        remoteDir: '/home/container/cstrike/addons'
         download: true
 
     - name: Commit changes
@@ -30,8 +32,8 @@ jobs:
       run: |
         git config --global user.name 'GitHub Action'
         git config --global user.email 'action@github.com'
-        git add server-files/
-        git diff --staged --quiet || git commit -m "Sync server files"
+        git add server-files/addons/
+        git diff --staged --quiet || git commit -m "Sync server files from addons"
         git push || echo "No changes to push"
 
   deploy-to-server:
@@ -46,6 +48,6 @@ jobs:
         port: 2022
         username: ${{ secrets.SFTP_USERNAME }}
         password: ${{ secrets.SFTP_PASSWORD }}
-        localDir: './server-files'
-        remoteDir: '/cstrike/addons'
+        localDir: './server-files/addons'
+        remoteDir: '/home/container/cstrike/addons'
         forceUpload: true
