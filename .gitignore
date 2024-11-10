@@ -2,25 +2,33 @@
 *.amx
 *.amxx
 !working-files/plugins/compiled/*.amxx
-server-files/**
 *.cfg
 !working-files/configs/*.cfg
 
+# Server files exceptions
+server-files/*
+!server-files/addons/
+server-files/addons/*
+!server-files/addons/amxmodx/
+!server-files/addons/metamod/
+
+# Working files structure
+!working-files/
+!working-files/configs/
+!working-files/plugins/
+!working-files/plugins/compiled/
+!working-files/plugins/source/
+
 # MetaMod specific
-metamod/*.so
-metamod/*.dll
-!working-files/metamod/configs/*.ini
+*.so
+*.dll
+metamod/logs/
 
 # AMX Mod X specific
 amxmodx/modules/*.so
 amxmodx/modules/*.dll
 amxmodx/logs/
 amxmodx/scripting/*.err
-
-# Allow specific directories
-!server-files/addons/
-!server-files/addons/amxmodx/
-!server-files/addons/metamod/
 
 # Server logs and backups
 logs/
@@ -43,29 +51,9 @@ __pycache__/
 *$py.class
 .Python
 build/
-develop-eggs/
 dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
 *.egg-info/
-.installed.cfg
 *.egg
-
-# Virtual Environment
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
 
 # Operating System
 .DS_Store
@@ -74,19 +62,6 @@ desktop.ini
 $RECYCLE.BIN/
 *.swp
 *.swo
-
-# Temporary files
-*.tmp
-*~
-*.bak
-*.swp
-
-# Build and compile directories
-build/
-bin/
-obj/
-Debug/
-Release/
 
 # Project specific ignores
 secret.txt
