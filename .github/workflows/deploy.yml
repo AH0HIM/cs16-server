@@ -29,15 +29,8 @@ jobs:
           localDir: './server-files/addons'
           remoteDir: '/cstrike/addons'
           download: true
-          forceDownload: true
-          removeExtraFiles: false
           dryRun: false
-
-      # Clean .gitkeep files after download
-      - name: Clean .gitkeep files
-        if: github.event_name == 'workflow_dispatch'
-        run: |
-          find ./server-files/addons -name ".gitkeep" -type f -delete
+          exclude: "^\\."  # Виключаємо .gitkeep файли
 
       # Commit downloaded files
       - name: Commit changes
@@ -62,4 +55,4 @@ jobs:
           localDir: './server-files/addons'
           remoteDir: '/cstrike/addons'
           forceUpload: true
-          removeExtraFiles: false
+          exclude: "^\\."  # Виключаємо .gitkeep файли
