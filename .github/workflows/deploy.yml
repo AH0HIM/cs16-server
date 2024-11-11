@@ -33,8 +33,9 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         run: |
           echo "set sftp:auto-confirm yes" > lftp_script
-          echo "open sftp://${{ secrets.SFTP_HOST }}:2022 -u ${{ secrets.SFTP_USERNAME }},${{ secrets.SFTP_PASSWORD }}" >> lftp_script
-          echo "mirror --verbose --delete /home/container/cstrike/addons/ $GITHUB_WORKSPACE/server-files/addons/" >> lftp_script
+          echo "open -u ${{ secrets.SFTP_USERNAME }},${{ secrets.SFTP_PASSWORD }} sftp://${{ secrets.SFTP_HOST }}:2022" >> lftp_script
+          echo "mirror --verbose --delete cstrike/addons $GITHUB_WORKSPACE/server-files/addons" >> lftp_script
+          cat lftp_script | grep -v ${{ secrets.SFTP_PASSWORD }}
           lftp -f lftp_script
           rm lftp_script
           ls -la server-files/addons/
@@ -60,7 +61,8 @@ jobs:
         if: github.event_name == 'push'
         run: |
           echo "set sftp:auto-confirm yes" > lftp_script
-          echo "open sftp://${{ secrets.SFTP_HOST }}:2022 -u ${{ secrets.SFTP_USERNAME }},${{ secrets.SFTP_PASSWORD }}" >> lftp_script
-          echo "mirror --verbose --reverse --delete $GITHUB_WORKSPACE/server-files/addons/ /home/container/cstrike/addons/" >> lftp_script
+          echo "open -u ${{ secrets.SFTP_USERNAME }},${{ secrets.SFTP_PASSWORD }} sftp://${{ secrets.SFTP_HOST }}:2022" >> lftp_script
+          echo "mirror --verbose --reverse --delete $GITHUB_WORKSPACE/server-files/addons cstrike/addons" >> lftp_script
+          cat lftp_script | grep -v ${{ secrets.SFTP_PASSWORD }}
           lftp -f lftp_script
           rm lftp_script
