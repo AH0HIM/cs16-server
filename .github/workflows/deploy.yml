@@ -20,16 +20,17 @@ jobs:
       # Download from server (on manual trigger)
       - name: Sync from server
         if: github.event_name == 'workflow_dispatch'
-        uses: milanmk/actions-file-deployer@master
+        uses: wangyucode/sftp-upload-action@v2.0.2
         with:
-          remote-protocol: sftp
-          remote-host: ${{ secrets.SFTP_HOST }}
-          remote-port: 2022
-          remote-user: ${{ secrets.SFTP_USERNAME }}
-          remote-password: ${{ secrets.SFTP_PASSWORD }}
-          remote-path: /home/container/cstrike/addons
-          local-path: ./server-files/addons
-          sync: download
+          host: ${{ secrets.SFTP_HOST }}
+          port: 2022
+          username: ${{ secrets.SFTP_USERNAME }}
+          password: ${{ secrets.SFTP_PASSWORD }}
+          localDir: 'server-files/addons'
+          remoteDir: '/home/container/cstrike/addons'
+          forceUpload: false
+          dryRun: false
+          exclude: "^\\."
 
       # Commit downloaded files
       - name: Commit changes
@@ -45,13 +46,14 @@ jobs:
       # Deploy to server (on push)
       - name: Deploy to server
         if: github.event_name == 'push'
-        uses: milanmk/actions-file-deployer@master
+        uses: wangyucode/sftp-upload-action@v2.0.2
         with:
-          remote-protocol: sftp
-          remote-host: ${{ secrets.SFTP_HOST }}
-          remote-port: 2022
-          remote-user: ${{ secrets.SFTP_USERNAME }}
-          remote-password: ${{ secrets.SFTP_PASSWORD }}
-          remote-path: /home/container/cstrike/addons
-          local-path: ./server-files/addons
-          sync: upload
+          host: ${{ secrets.SFTP_HOST }}
+          port: 2022
+          username: ${{ secrets.SFTP_USERNAME }}
+          password: ${{ secrets.SFTP_PASSWORD }}
+          localDir: 'server-files/addons'
+          remoteDir: '/home/container/cstrike/addons'
+          forceUpload: true
+          dryRun: false
+          exclude: "^\\."
