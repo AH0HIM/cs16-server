@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main ]
     paths:
-      - 'server-files/**'
+      - 'server-files/addons/**'
   workflow_dispatch:
 
 jobs:
@@ -22,7 +22,7 @@ jobs:
           port: 2022
           username: ${{ secrets.SFTP_USERNAME }}
           password: ${{ secrets.SFTP_PASSWORD }}
-          localDir: './server-files'
+          localDir: './server-files/addons'
           remoteDir: '/cstrike/addons'
           download: true
 
@@ -35,7 +35,7 @@ jobs:
           port: 2022
           username: ${{ secrets.SFTP_USERNAME }}
           password: ${{ secrets.SFTP_PASSWORD }}
-          localDir: './server-files'
+          localDir: './server-files/addons'
           remoteDir: '/cstrike/addons'
           forceUpload: true
 
