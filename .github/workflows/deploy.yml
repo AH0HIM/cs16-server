@@ -36,14 +36,22 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         run: |
           # Create lftp script
-          echo "open sftp://${{ secrets.SFTP_HOST }}:2022 -u ${{ secrets.SFTP_USERNAME }},${{ secrets.SFTP_PASSWORD }}" > lftp_script
-          echo "mirror --verbose --reverse --delete /cstrike/addons/ ./server-files/addons/" >> lftp_script
+          echo "set sftp:auto-confirm yes" > lftp_script
+          echo "open sftp://${{ secrets.SFTP_HOST }}:2022 -u ${{ secrets.SFTP_USERNAME }},${{ secrets.SFTP_PASSWORD }}" >> lftp_script
+          echo "cd /home/container/cstrike/addons" >> lftp_script
+          echo "mirror --verbose --reverse --delete ./ ./server-files/addons/" >> lftp_script
+          
+          # Show script content (without password)
+          cat lftp_script | grep -v password
           
           # Run lftp
           lftp -f lftp_script
           
           # Remove script
           rm lftp_script
+          
+          # Show downloaded files
+          ls -la server-files/addons/
 
       # Configure Git
       - name: Configure Git
@@ -65,7 +73,9 @@ jobs:
       - name: Deploy to server
         if: github.event_name == 'push'
         run: |
-          echo "open sftp://${{ secrets.SFTP_HOST }}:2022 -u ${{ secrets.SFTP_USERNAME }},${{ secrets.SFTP_PASSWORD }}" > lftp_script
-          echo "mirror --verbose --delete ./server-files/addons/ /cstrike/addons/" >> lftp_script
+          echo "set sftp:auto-confirm yes" > lftp_script
+          echo "open sftp://${{ secrets.SFTP_HOST }}:2022 -u ${{ secrets.SFTP_USERNAME }},${{ secrets.SFTP_PASSWORD }}" >> lftp_script
+          echo "cd /home/container/cstrike/" >> lftp_script
+          echo "mirror --verbose --delete ./server-files/addons/ addons/" >> lftp_script
           lftp -f lftp_script
           rm lftp_script
