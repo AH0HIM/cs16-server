@@ -26,6 +26,7 @@ jobs:
           
           # Create metamod structure
           mkdir -p server-files/addons/metamod/dlls
+          touch server-files/addons/metamod/plugins.ini
 
       # Download from server (on manual trigger)
       - name: Sync from server
@@ -38,22 +39,35 @@ jobs:
           password: ${{ secrets.SFTP_PASSWORD }}
           localDir: './server-files/addons'
           remoteDir: 'cstrike/addons'
-          forceUpload: true
-          exclude: "^\\."
+          forceUpload: false
+          dryRun: true
 
       # Configure Git
       - name: Configure Git
         run: |
           git config --global user.name "GitHub Action"
           git config --global user.email "action@github.com"
+          # Використовуємо HTTPS з токеном в URL
+          git remote set-url origin "https://${{ secrets.GH_TOKEN }}@github.com/${{ github.repository }}.git"
 
-      # Commit downloaded files
+      # Commit downloaded files (on manual trigger)
       - name: Commit changes
         if: github.event_name == 'workflow_dispatch'
         run: |
+          # Додаємо файли
           git add -f server-files/addons/
+          
+          # Перевіряємо статус
           git status
-          git diff --staged --quiet || (git commit -m "Sync files from server" && git push)
+          
+          # Комітимо якщо є зміни
+          if ! git diff --staged --quiet; then
+            git commit -m "Sync files from server"
+            # Використовуємо токен явно в URL
+            git push "https://${{ secrets.GH_TOKEN }}@github.com/${{ github.repository }}.git" HEAD:main
+          else
+            echo "No changes to commit"
+          fi
 
       # Deploy to server (on push)
       - name: Deploy to server
@@ -66,4 +80,5 @@ jobs:
           password: ${{ secrets.SFTP_PASSWORD }}
           localDir: './server-files/addons'
           remoteDir: 'cstrike/addons'
-          forceUpload: true
+          forceUpload: false
+          dryRun: true
