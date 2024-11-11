@@ -20,21 +20,17 @@ jobs:
       # Download from server (on manual trigger)
       - name: Sync from server
         if: github.event_name == 'workflow_dispatch'
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        uses: wangyucode/sftp-upload-action@v2.0.2
         with:
-          server: ${{ secrets.SFTP_HOST }}
+          host: ${{ secrets.SFTP_HOST }}
+          port: 2022
           username: ${{ secrets.SFTP_USERNAME }}
           password: ${{ secrets.SFTP_PASSWORD }}
-          port: 2022
-          protocol: sftp
-          local-dir: ./server-files/addons/
-          server-dir: /cstrike/addons/
-          dangerous-clean-slate: false
-          exclude: |
-            **/.git*
-            **/.git*/**
-            **/node_modules/**
+          localDir: './server-files/addons'
+          remoteDir: '/home/container/cstrike/addons'
           download: true
+          dryRun: false
+          exclude: "^\\."
 
       # Commit downloaded files
       - name: Commit changes
@@ -50,17 +46,13 @@ jobs:
       # Deploy to server (on push)
       - name: Deploy changes
         if: github.event_name == 'push'
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        uses: wangyucode/sftp-upload-action@v2.0.2
         with:
-          server: ${{ secrets.SFTP_HOST }}
+          host: ${{ secrets.SFTP_HOST }}
+          port: 2022
           username: ${{ secrets.SFTP_USERNAME }}
           password: ${{ secrets.SFTP_PASSWORD }}
-          port: 2022
-          protocol: sftp
-          local-dir: ./server-files/addons/
-          server-dir: /cstrike/addons/
-          dangerous-clean-slate: false
-          exclude: |
-            **/.git*
-            **/.git*/**
-            **/node_modules/**
+          localDir: './server-files/addons'
+          remoteDir: '/home/container/cstrike/addons'
+          forceUpload: true
+          exclude: "^\\."
