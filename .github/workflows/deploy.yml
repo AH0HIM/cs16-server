@@ -17,6 +17,10 @@ jobs:
           token: ${{ secrets.GH_TOKEN }}
           fetch-depth: 0
 
+      # Install lftp
+      - name: Install lftp
+        run: sudo apt-get update && sudo apt-get install -y lftp
+
       # Create base structure (on manual trigger)
       - name: Create base structure
         if: github.event_name == 'workflow_dispatch'
@@ -26,59 +30,42 @@ jobs:
           
           # Create metamod structure
           mkdir -p server-files/addons/metamod/dlls
-          touch server-files/addons/metamod/plugins.ini
 
       # Download from server (on manual trigger)
       - name: Sync from server
         if: github.event_name == 'workflow_dispatch'
-        uses: wangyucode/sftp-upload-action@v2.0.2
-        with:
-          host: ${{ secrets.SFTP_HOST }}
-          port: 2022
-          username: ${{ secrets.SFTP_USERNAME }}
-          password: ${{ secrets.SFTP_PASSWORD }}
-          localDir: './server-files/addons'
-          remoteDir: 'cstrike/addons'
-          forceUpload: false
-          dryRun: true
+        run: |
+          # Create lftp script
+          echo "open sftp://${{ secrets.SFTP_HOST }}:2022 -u ${{ secrets.SFTP_USERNAME }},${{ secrets.SFTP_PASSWORD }}" > lftp_script
+          echo "mirror --verbose --reverse --delete /cstrike/addons/ ./server-files/addons/" >> lftp_script
+          
+          # Run lftp
+          lftp -f lftp_script
+          
+          # Remove script
+          rm lftp_script
 
       # Configure Git
       - name: Configure Git
         run: |
           git config --global user.name "GitHub Action"
           git config --global user.email "action@github.com"
-          # Використовуємо HTTPS з токеном в URL
-          git remote set-url origin "https://${{ secrets.GH_TOKEN }}@github.com/${{ github.repository }}.git"
 
-      # Commit downloaded files (on manual trigger)
+      # Commit downloaded files
       - name: Commit changes
         if: github.event_name == 'workflow_dispatch'
         run: |
-          # Додаємо файли
-          git add -f server-files/addons/
-          
-          # Перевіряємо статус
+          git add -A server-files/addons/
           git status
-          
-          # Комітимо якщо є зміни
-          if ! git diff --staged --quiet; then
-            git commit -m "Sync files from server"
-            # Використовуємо токен явно в URL
-            git push "https://${{ secrets.GH_TOKEN }}@github.com/${{ github.repository }}.git" HEAD:main
-          else
-            echo "No changes to commit"
-          fi
+          git diff --cached --name-status
+          git commit -m "Sync files from server" || echo "No changes to commit"
+          git push || echo "No changes to push"
 
       # Deploy to server (on push)
       - name: Deploy to server
         if: github.event_name == 'push'
-        uses: wangyucode/sftp-upload-action@v2.0.2
-        with:
-          host: ${{ secrets.SFTP_HOST }}
-          port: 2022
-          username: ${{ secrets.SFTP_USERNAME }}
-          password: ${{ secrets.SFTP_PASSWORD }}
-          localDir: './server-files/addons'
-          remoteDir: 'cstrike/addons'
-          forceUpload: false
-          dryRun: true
+        run: |
+          echo "open sftp://${{ secrets.SFTP_HOST }}:2022 -u ${{ secrets.SFTP_USERNAME }},${{ secrets.SFTP_PASSWORD }}" > lftp_script
+          echo "mirror --verbose --delete ./server-files/addons/ /cstrike/addons/" >> lftp_script
+          lftp -f lftp_script
+          rm lftp_script
