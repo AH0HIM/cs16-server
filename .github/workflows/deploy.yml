@@ -1,4 +1,4 @@
-name: CS Server Sync and Deploy
+name: CS Server Deploy
 
 on:
   push:
@@ -13,35 +13,35 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.GH_TOKEN }}
 
       # Download from server (on manual trigger)
-      - name: Download from server
+      - name: Sync from server
         if: github.event_name == 'workflow_dispatch'
-        run: |
-          mkdir -p server-files/addons
-          echo "get -r /home/container/cstrike/addons/* server-files/addons/" > sftp_commands
-          sshpass -p "${{ secrets.SFTP_PASSWORD }}" sftp -P 2022 -o StrictHostKeyChecking=no ${{ secrets.SFTP_USERNAME }}@${{ secrets.SFTP_HOST }} < sftp_commands
-          rm sftp_commands
+        uses: wangyucode/sftp-upload-action@v2.0.2
+        with:
+          host: ${{ secrets.SFTP_HOST }}
+          port: 2022
+          username: ${{ secrets.SFTP_USERNAME }}
+          password: ${{ secrets.SFTP_PASSWORD }}
+          localDir: './server-files/addons'
+          remoteDir: 'cstrike/addons'
+          forceUpload: false
+          dryRun: false
+          exclude: "^\\."
 
-      # Install sshpass
-      - name: Install sshpass
-        run: sudo apt-get install -y sshpass
-
-      # Commit changes
+      # Commit downloaded files
       - name: Commit changes
         if: github.event_name == 'workflow_dispatch'
         run: |
           git config --global user.name "GitHub Action"
           git config --global user.email "action@github.com"
+          git remote set-url origin https://${{ secrets.GH_TOKEN }}@github.com/${{ github.repository }}.git
           git add -f server-files/addons/
           git status
-          git commit -m "Sync files from server" || echo "No changes to commit"
-          git push || echo "No changes to push"
+          git diff --staged --quiet || (git commit -m "Sync files from server" && git push)
 
       # Deploy to server (on push)
-      - name: Upload to server
+      - name: Deploy to server
         if: github.event_name == 'push'
         uses: wangyucode/sftp-upload-action@v2.0.2
         with:
@@ -49,6 +49,7 @@ jobs:
           port: 2022
           username: ${{ secrets.SFTP_USERNAME }}
           password: ${{ secrets.SFTP_PASSWORD }}
-          localDir: 'server-files/addons'
-          remoteDir: '/home/container/cstrike/addons'
+          localDir: './server-files/addons'
+          remoteDir: 'cstrike/addons'
           forceUpload: true
+          dryRun: false
