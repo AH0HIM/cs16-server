@@ -25,32 +25,18 @@ jobs:
       - name: Create base structure
         if: github.event_name == 'workflow_dispatch'
         run: |
-          # Create amxmodx structure
           mkdir -p server-files/addons/amxmodx/{configs,data,dlls,logs,modules,plugins,scripting}
-          
-          # Create metamod structure
           mkdir -p server-files/addons/metamod/dlls
 
       # Download from server (on manual trigger)
       - name: Sync from server
         if: github.event_name == 'workflow_dispatch'
         run: |
-          # Create lftp script
           echo "set sftp:auto-confirm yes" > lftp_script
           echo "open sftp://${{ secrets.SFTP_HOST }}:2022 -u ${{ secrets.SFTP_USERNAME }},${{ secrets.SFTP_PASSWORD }}" >> lftp_script
-          echo "cd /home/container/cstrike/addons" >> lftp_script
-          echo "mirror --verbose --reverse --delete ./ ./server-files/addons/" >> lftp_script
-          
-          # Show script content (without password)
-          cat lftp_script | grep -v password
-          
-          # Run lftp
+          echo "mirror --verbose --delete /home/container/cstrike/addons/ $GITHUB_WORKSPACE/server-files/addons/" >> lftp_script
           lftp -f lftp_script
-          
-          # Remove script
           rm lftp_script
-          
-          # Show downloaded files
           ls -la server-files/addons/
 
       # Configure Git
@@ -75,7 +61,6 @@ jobs:
         run: |
           echo "set sftp:auto-confirm yes" > lftp_script
           echo "open sftp://${{ secrets.SFTP_HOST }}:2022 -u ${{ secrets.SFTP_USERNAME }},${{ secrets.SFTP_PASSWORD }}" >> lftp_script
-          echo "cd /home/container/cstrike/" >> lftp_script
-          echo "mirror --verbose --delete ./server-files/addons/ addons/" >> lftp_script
+          echo "mirror --verbose --reverse --delete $GITHUB_WORKSPACE/server-files/addons/ /home/container/cstrike/addons/" >> lftp_script
           lftp -f lftp_script
           rm lftp_script
