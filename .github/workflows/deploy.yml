@@ -38,7 +38,8 @@ jobs:
           password: ${{ secrets.SFTP_PASSWORD }}
           localDir: './server-files/addons'
           remoteDir: 'cstrike/addons'
-          download: true
+          forceUpload: true
+          exclude: "^\\."
 
       # Configure Git
       - name: Configure Git
