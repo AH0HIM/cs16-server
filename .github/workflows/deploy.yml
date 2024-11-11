@@ -8,48 +8,43 @@ on:
   workflow_dispatch:
 
 jobs:
-  sync-from-server:
+  sync-and-deploy:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-    - name: Create addons directory
-      run: mkdir -p ./server-files/addons
+      # Download from server (on manual trigger)
+      - name: Sync from server
+        if: github.event_name == 'workflow_dispatch'
+        uses: wangyucode/sftp-upload-action@v2.0.2
+        with:
+          host: ${{ secrets.SFTP_HOST }}
+          port: 2022
+          username: ${{ secrets.SFTP_USERNAME }}
+          password: ${{ secrets.SFTP_PASSWORD }}
+          localDir: './server-files'
+          remoteDir: '/cstrike/addons'
+          download: true
 
-    - name: Download files from server using sftp
-      env:
-        SFTP_HOST: ${{ secrets.SFTP_HOST }}
-        SFTP_USERNAME: ${{ secrets.SFTP_USERNAME }}
-        SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
-      run: |
-        sftp $SFTP_USERNAME@$SFTP_HOST <<EOF
-        cd /home/container/cstrike/addons
-        lcd ./server-files/addons
-        mget *
-        bye
-        EOF
+      # Deploy to server (on push)
+      - name: Deploy changes
+        if: github.event_name == 'push'
+        uses: wangyucode/sftp-upload-action@v2.0.2
+        with:
+          host: ${{ secrets.SFTP_HOST }}
+          port: 2022
+          username: ${{ secrets.SFTP_USERNAME }}
+          password: ${{ secrets.SFTP_PASSWORD }}
+          localDir: './server-files'
+          remoteDir: '/cstrike/addons'
+          forceUpload: true
 
-    - name: Commit changes
-      if: steps.git-status.outputs.clean == 'false'
-      run: |
-        git config --global user.name 'GitHub Action'
-        git config --global user.email 'action@github.com'
-        git add server-files/addons/
-        git diff --staged --quiet || git commit -m "Sync server files from addons"
-        git push || echo "No changes to push"
-
-  deploy-to-server:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-
-    - name: Deploy to server
-      uses: wangyucode/sftp-upload-action@v2.0.2
-      with:
-        host: ${{ secrets.SFTP_HOST }}
-        port: 2022
-        username: ${{ secrets.SFTP_USERNAME }}
-        password: ${{ secrets.SFTP_PASSWORD }}
-        localDir: './server-files/addons'
-        remoteDir: '/home/container/cstrike/addons'
-        forceUpload: true
+      # Commit downloaded files
+      - name: Commit changes
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          git config --global user.name 'GitHub Action'
+          git config --global user.email 'action@github.com'
+          git add server-files/
+          git diff --staged --quiet || git commit -m "Update server files from sync"
+          git push || echo "No changes to push"

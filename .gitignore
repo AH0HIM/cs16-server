@@ -1,9 +1,7 @@
-# CS 1.6 specific
-*.amx
-*.amxx
-!working-files/plugins/compiled/*.amxx
-*.cfg
-!working-files/configs/*.cfg
+# IDE
+.idea/
+.vscode/
+*.iml
 
 # Server files exceptions
 server-files/*
@@ -12,61 +10,14 @@ server-files/addons/*
 !server-files/addons/amxmodx/
 !server-files/addons/metamod/
 
-# Working files structure
-!working-files/
-!working-files/configs/
-!working-files/plugins/
-!working-files/plugins/compiled/
-!working-files/plugins/source/
-
-# MetaMod specific
-*.so
-*.dll
-metamod/logs/
-
-# AMX Mod X specific
-amxmodx/modules/*.so
-amxmodx/modules/*.dll
-amxmodx/logs/
-amxmodx/scripting/*.err
-
-# Server logs and backups
-logs/
-backup/
+# Logs and temp files
 *.log
 *.bak
-error_log
-server_log.txt
+logs/
+backup/
+*.tmp
+*.swp
 
-# PyCharm and other IDEs
-.idea/
-.vscode/
-*.iml
-*.iws
-*.ipr
-
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-.Python
-build/
-dist/
-*.egg-info/
-*.egg
-
-# Operating System
+# System
 .DS_Store
 Thumbs.db
-desktop.ini
-$RECYCLE.BIN/
-*.swp
-*.swo
-
-# Project specific ignores
-secret.txt
-credentials.ini
-*.private
-
-# GitHub
-.github/workflow/.env
