@@ -14,13 +14,18 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      # Download from server (on manual trigger)
-      - name: Create directories
+      # Create base structure (on manual trigger)
+      - name: Create base structure
         if: github.event_name == 'workflow_dispatch'
         run: |
-          mkdir -p server-files/addons/amxmodx
-          mkdir -p server-files/addons/metamod
+          # Create amxmodx structure
+          mkdir -p server-files/addons/amxmodx/{configs,data,dlls,logs,modules,plugins,scripting}
+          
+          # Create metamod structure
+          mkdir -p server-files/addons/metamod/dlls
+          touch server-files/addons/metamod/plugins.ini
 
+      # Download from server (on manual trigger)
       - name: Sync from server
         if: github.event_name == 'workflow_dispatch'
         uses: wangyucode/sftp-upload-action@v2.0.2
@@ -32,7 +37,7 @@ jobs:
           localDir: './server-files/addons'
           remoteDir: 'cstrike/addons'
           forceUpload: false
-          dryRun: true # Спочатку подивимось що буде синхронізуватися
+          dryRun: true # Спочатку в режимі тестування
 
       # Commit downloaded files
       - name: Commit changes
@@ -56,5 +61,5 @@ jobs:
           password: ${{ secrets.SFTP_PASSWORD }}
           localDir: './server-files/addons'
           remoteDir: 'cstrike/addons'
-          forceUpload: false # Змінено на false для безпеки
-          dryRun: true # Спочатку в режимі перегляду
+          forceUpload: false
+          dryRun: true
