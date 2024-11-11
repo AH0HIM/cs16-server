@@ -5,6 +5,7 @@ on:
     branches: [ main ]
     paths:
       - 'server-files/addons/**'
+      - '!.github/workflows/**'  # Виключаємо зміни в workflows
   workflow_dispatch:
 
 jobs:
