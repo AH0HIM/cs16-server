@@ -509,11 +509,11 @@ stock fm_strip_user_weapons(index) {
 	return 1;
 }
 
-stock fm_set_user_frags(index, frags) {
+/*stock fm_set_user_frags(index, frags) {
 	set_pev(index, pev_frags, float(frags));
 
 	return 1;
-}
+}*/
 
 
 /* Cstrike functions */
@@ -880,3 +880,27 @@ stock fm_get_weaponbox_type(entity) {
 #define fm_remove_weaponbox(%1) dllfunc(DLLFunc_Think, %1)
 /* stock fm_remove_weaponbox(entity)
 	return dllfunc(DLLFunc_Think, entity) */
+
+stock fm_find_sphere_class(ent, const _classname[], Float:radius, entlist[], maxents, Float:origin[3] = { 0.0, 0.0, 0.0 })
+{
+	if(pev_valid(ent))
+		pev(ent, pev_origin, origin)
+	
+	new tempent, tempclass[32], entsfound
+	while((tempent = fm_find_ent_in_sphere(tempent, origin, radius) ) && entsfound < maxents)
+	{
+		if(_classname[0])
+		{
+			pev(tempent, pev_classname, tempclass, 31)
+			if(!equal(_classname, tempclass))
+				continue
+		}
+		
+		entlist[entsfound++] = tempent
+	}
+	
+	return entsfound
+}
+/* AMXX-Studio Notes - DO NOT MODIFY BELOW HERE
+*{\\ rtf1\\ ansi\\ deff0{\\ fonttbl{\\ f0\\ fnil Tahoma;}}\n\\ viewkind4\\ uc1\\ pard\\ lang1049\\ f0\\ fs16 \n\\ par }
+*/
