@@ -12,7 +12,7 @@ cs16-server/
     └── addons/
         ├── amxmodx/       # AMX Mod X files
         └── metamod/       # MetaMod files
-        └── reunion/       # Reunion files
+        
 ```
 
 ## Workflow
