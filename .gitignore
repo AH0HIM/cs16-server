@@ -6,9 +6,9 @@
 # Server files exceptions
 server-files/*
 !server-files/addons/
-server-files/addons/*
-!server-files/addons/amxmodx/
-!server-files/addons/metamod/
+# server-files/addons/*
+# !server-files/addons/amxmodx/
+# !server-files/addons/metamod/
 
 # Logs and temp files
 *.log
