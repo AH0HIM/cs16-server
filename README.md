@@ -1,6 +1,8 @@
-# CS 1.6 Server
+# CS 1.6 Server ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/AH0HIM/cs16-server/.github/workflows/deploy.yml) ![Last Commit](https://img.shields.io/github/last-commit/AH0HIM/cs16-server) ![GitHub commit count](https://img.shields.io/github/commit-activity/y/AH0HIM/cs16-server)
 
 Configuration and management system for Counter-Strike 1.6 server.
+
+
 
 ## Structure
 
