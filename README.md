@@ -8,11 +8,14 @@ Configuration and management system for Counter-Strike 1.6 server.
 
 ```
 cs16-server/
-└── server-files/          # Server files and configs
-    └── addons/
-        ├── amxmodx/       # AMX Mod X files
-        └── metamod/       # MetaMod files
-        
+└── server-files/                    # Server files and configs
+    ├── addons/
+    │   ├── amxmodx/                 # AMX Mod X files
+    │   │   ├── configs/             # AMX Mod X configuration files
+    │   │   ├── plugins/             # AMX Mod X plugins
+    │   │   └── data/                # Language and other data files for AMX Mod X
+    │   ├── metamod/                 # MetaMod files
+    │       └── plugins.ini          # MetaMod plugins list (e.g., AMX Mod X, Reunion, dproto)
 ```
 
 ## Workflow
